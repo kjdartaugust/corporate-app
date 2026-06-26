@@ -41,6 +41,7 @@ create table if not exists public.employees (
   created_at    timestamptz default now()
 );
 
+alter table public.departments drop constraint if exists departments_lead_fk;
 alter table public.departments
   add constraint departments_lead_fk
   foreign key (lead_id) references public.employees (id) deferrable initially deferred;
