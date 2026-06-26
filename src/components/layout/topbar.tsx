@@ -1,8 +1,10 @@
 "use client";
 
-import { Bell, Menu, Search } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Bell, LogOut, Menu, Search } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
 import { ThemeToggle } from "./theme-toggle";
+import { createClient, isDemoMode } from "@/lib/supabase/client";
 import type { Employee } from "@/lib/types";
 
 export function Topbar({
@@ -12,6 +14,16 @@ export function Topbar({
   user: Employee;
   onMenu?: () => void;
 }) {
+  const router = useRouter();
+
+  async function signOut() {
+    if (!isDemoMode) {
+      await createClient().auth.signOut();
+    }
+    router.push("/login");
+    router.refresh();
+  }
+
   return (
     <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b glass px-4 lg:px-6">
       <button className="lg:hidden" onClick={onMenu} aria-label="Open menu">
@@ -41,6 +53,13 @@ export function Topbar({
             <p className="text-sm font-semibold">{user.full_name}</p>
             <p className="text-xs text-muted-foreground">{user.title}</p>
           </div>
+          <button
+            onClick={signOut}
+            aria-label="Sign out"
+            className="ml-1 grid h-9 w-9 place-items-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground"
+          >
+            <LogOut className="h-[18px] w-[18px]" />
+          </button>
         </div>
       </div>
     </header>

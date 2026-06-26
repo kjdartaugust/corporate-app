@@ -1,9 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-
-const isDemoMode =
-  process.env.NEXT_PUBLIC_DEMO_MODE === "true" ||
-  !process.env.NEXT_PUBLIC_SUPABASE_URL;
+import { isDemoMode } from "@/lib/demo-flag";
 
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });

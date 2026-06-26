@@ -8,8 +8,8 @@ import { createClient, isDemoMode } from "@/lib/supabase/client";
 
 export function LoginForm() {
   const router = useRouter();
-  const [email, setEmail] = useState("grace.mensah@northwind.co");
-  const [password, setPassword] = useState("demo-password");
+  const [email, setEmail] = useState(isDemoMode ? "grace.mensah@northwind.co" : "");
+  const [password, setPassword] = useState(isDemoMode ? "demo-password" : "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

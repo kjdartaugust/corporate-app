@@ -44,10 +44,43 @@ export async function getEmployee(id: string): Promise<Employee | null> {
 
 export async function getCurrentUser(): Promise<Employee> {
   if (isDemoMode) return demo.currentUser;
+
   const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const employees = await getEmployees();
-  return employees.find((e) => e.email === user?.email) ?? demo.currentUser;
+
+  if (!user) return demo.currentUser;
+
+  // Prefer the employees row linked to this auth user (created by the
+  // on_auth_user_created trigger); fall back to an email match.
+  const { data } = await supabase
+    .from("employees")
+    .select("*")
+    .or(`auth_id.eq.${user.id},email.eq.${user.email}`)
+    .limit(1)
+    .maybeSingle();
+
+  if (data) return data as Employee;
+
+  // Brand-new user whose profile row hasn't materialized yet — synthesize a
+  // minimal profile from the auth metadata so the app still renders.
+  const meta = (user.user_metadata ?? {}) as { full_name?: string; title?: string };
+  return {
+    id: user.id,
+    full_name: meta.full_name ?? user.email?.split("@")[0] ?? "New Employee",
+    email: user.email ?? "",
+    title: meta.title ?? "New Employee",
+    department_id: "",
+    manager_id: null,
+    role: "employee",
+    avatar_url: "",
+    phone: "",
+    location: "",
+    start_date: new Date().toISOString().slice(0, 10),
+    status: "onboarding",
+    salary: 0,
+    bio: "",
+    skills: [],
+  };
 }
